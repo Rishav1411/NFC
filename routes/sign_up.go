@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"nfc/m/database"
+	"nfc/m/database/operations"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -11,7 +13,10 @@ import (
 
 func validation(userData []byte) *User {
 	user := &User{}
-	json.Unmarshal(userData, user)
+	unerr := json.Unmarshal(userData, user)
+	if unerr != nil {
+		return nil
+	}
 	validate := validator.New()
 	validate.RegisterValidation("phone", PhoneValidor)
 	err := validate.Struct(user)
@@ -31,6 +36,23 @@ func SignUp() *chi.Mux {
 				"details": "data is not of valid format",
 			})
 			WriteJson(w, jsonData, 400)
+			return
+		}
+		db := database.CreateConnection()
+		if db == nil {
+			ServerError(w)
+			return
+		}
+		res, err := operations.CheckUser(user.Phone, db)
+		if err != nil {
+			ServerError(w)
+			return
+		}
+		if res {
+			jsonData, _ := json.Marshal(map[string]interface{}{
+				"details": "user already exists",
+			})
+			WriteJson(w, jsonData, http.StatusConflict)
 			return
 		}
 		jsonData, _ := json.Marshal(map[string]interface{}{

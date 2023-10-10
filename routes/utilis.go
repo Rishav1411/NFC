@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"regexp"
 
@@ -17,4 +18,11 @@ func WriteJson(w http.ResponseWriter, message []byte, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(message)
+}
+
+func ServerError(w http.ResponseWriter) {
+	jsonData, _ := json.Marshal(map[string]interface{}{
+		"details": "server error",
+	})
+	WriteJson(w, jsonData, http.StatusInternalServerError)
 }
