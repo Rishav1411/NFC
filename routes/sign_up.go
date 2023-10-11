@@ -1,11 +1,13 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"nfc/m/database"
 	"nfc/m/database/operations"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
@@ -19,6 +21,7 @@ func validation(userData []byte) *User {
 	}
 	validate := validator.New()
 	validate.RegisterValidation("phone", PhoneValidor)
+	validate.RegisterValidation("reg", RegValidator)
 	err := validate.Struct(user)
 	if err != nil {
 		return nil
@@ -38,11 +41,12 @@ func SignUp() *chi.Mux {
 			WriteJson(w, jsonData, 400)
 			return
 		}
-		db := database.CreateConnection()
+		db := database.SQLConnection()
 		if db == nil {
 			ServerError(w)
 			return
 		}
+		defer db.Close()
 		res, err := operations.CheckUser(user.Phone, db)
 		if err != nil {
 			ServerError(w)
@@ -53,6 +57,31 @@ func SignUp() *chi.Mux {
 				"details": "user already exists",
 			})
 			WriteJson(w, jsonData, http.StatusConflict)
+			return
+		}
+		client := database.RedisConnection()
+		if client == nil {
+			ServerError(w)
+			return
+		}
+		defer client.Close()
+		otp := GenerateOTP()
+		key := GenerateKey(user.Phone)
+		data := map[string]interface{}{
+			"type":  "sign_up",
+			"otp":   otp,
+			"name":  user.Name,
+			"phone": user.Phone,
+			"reg":   user.Reg,
+		}
+		err = client.HMSet(context.Background(), key, data).Err()
+		if err != nil {
+			ServerError(w)
+			return
+		}
+		err = client.Expire(context.Background(), key, time.Second*180).Err()
+		if err != nil {
+			ServerError(w)
 			return
 		}
 		jsonData, _ := json.Marshal(map[string]interface{}{

@@ -19,7 +19,7 @@ func main() {
 	sign_up := routes.SignUp()
 	r.Mount("/sign_up", sign_up)
 	server := http.Server{
-		Addr:    "127.0.0.1:8080",
+		Addr:    "0.0.0.0:8080",
 		Handler: r,
 	}
 	server.ListenAndServe()

@@ -1,7 +1,7 @@
 package routes
 
 type User struct {
-	FirstName string `json:"first_name" validate:"required,min=4,max=50"`
-	LastName  string `json:"last_name" validate:"required,min=4,max=50"`
-	Phone     string `json:"phone" validate:"required,min=13,max=13,phone"`
+	Name  string `json:"name" validate:"required,min=4,max=50"`
+	Reg   string `json:"reg" validate:"required,min=9,max=9,reg"`
+	Phone string `json:"phone" validate:"required,min=13,max=13,phone"`
 }
