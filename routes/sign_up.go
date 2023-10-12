@@ -13,14 +13,14 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func validation(userData []byte) *User {
+func user_validation(userData []byte) *User {
 	user := &User{}
 	unerr := json.Unmarshal(userData, user)
 	if unerr != nil {
 		return nil
 	}
 	validate := validator.New()
-	validate.RegisterValidation("phone", PhoneValidor)
+	validate.RegisterValidation("phone", PhoneValidator)
 	validate.RegisterValidation("reg", RegValidator)
 	err := validate.Struct(user)
 	if err != nil {
@@ -33,7 +33,7 @@ func SignUp() *chi.Mux {
 	sign_up.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		requestData, _ := io.ReadAll(r.Body)
 		defer r.Body.Close()
-		user := validation(requestData)
+		user := user_validation(requestData)
 		if user == nil {
 			jsonData, _ := json.Marshal(map[string]interface{}{
 				"details": "data is not of valid format",

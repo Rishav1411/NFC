@@ -17,7 +17,9 @@ func main() {
 		w.Write([]byte("Hello! World"))
 	})
 	sign_up := routes.SignUp()
+	otp := routes.Otp()
 	r.Mount("/sign_up", sign_up)
+	r.Mount("/otp", otp)
 	server := http.Server{
 		Addr:    "0.0.0.0:8080",
 		Handler: r,

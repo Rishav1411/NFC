@@ -13,12 +13,16 @@ import (
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
-func PhoneValidor(f1 validator.FieldLevel) bool {
+func PhoneValidator(f1 validator.FieldLevel) bool {
 	phone := f1.Field().String()
 	regex := regexp.MustCompile(`^\+\d{12}$`)
 	return regex.Match([]byte(phone))
 }
-
+func OTPValidator(f1 validator.FieldLevel) bool {
+	otp := f1.Field().String()
+	regex := regexp.MustCompile(`^\d{4}$`)
+	return regex.Match([]byte(otp))
+}
 func RegValidator(f1 validator.FieldLevel) bool {
 	reg := f1.Field().String()
 	regex := regexp.MustCompile(`^\d{2}[A-Z]{3}\d{4}$`)
