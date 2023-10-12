@@ -2,12 +2,15 @@ package operations
 
 import "database/sql"
 
-func CheckUser(phone string, db *sql.DB) (bool, error) {
+func CheckUser(phone string, db *sql.DB) (int, error) {
 	var id int
-	query := "SELECT COUNT(*) FROM users WHERE phone_number = ?"
+	query := "SELECT id FROM users WHERE phone_number = ?"
 	err := db.QueryRow(query, phone).Scan(&id)
 	if err != nil {
-		return false, err
+		if err.Error() == "sql: no rows in result set" {
+			return -1, nil
+		}
+		return -2, err
 	}
-	return id > 0, nil
+	return id, nil
 }

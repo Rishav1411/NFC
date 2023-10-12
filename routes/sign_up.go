@@ -52,7 +52,7 @@ func SignUp() *chi.Mux {
 			ServerError(w)
 			return
 		}
-		if res {
+		if res != -1 {
 			jsonData, _ := json.Marshal(map[string]interface{}{
 				"details": "user already exists",
 			})
@@ -67,6 +67,10 @@ func SignUp() *chi.Mux {
 		defer client.Close()
 		otp := GenerateOTP()
 		key := GenerateKey(user.Phone)
+		if !SendSMS(user.Phone, otp) {
+			ServerError(w)
+			return
+		}
 		data := map[string]interface{}{
 			"type":  "sign_up",
 			"otp":   otp,
