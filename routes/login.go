@@ -13,28 +13,28 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func user_validation(userData []byte) *User {
-	user := &User{}
-	unerr := json.Unmarshal(userData, user)
-	if unerr != nil {
+func phone_validation(jsonData []byte) *Phone {
+	phone := &Phone{}
+	phoneerr := json.Unmarshal(jsonData, phone)
+	if phoneerr != nil {
 		return nil
 	}
 	validate := validator.New()
 	validate.RegisterValidation("phone", PhoneValidator)
-	validate.RegisterValidation("reg", RegValidator)
-	err := validate.Struct(user)
+	err := validate.Struct(phone)
 	if err != nil {
 		return nil
 	}
-	return user
+	return phone
 }
-func SignUp() *chi.Mux {
-	sign_up := chi.NewRouter()
-	sign_up.Post("/", func(w http.ResponseWriter, r *http.Request) {
+
+func Login() *chi.Mux {
+	login := chi.NewMux()
+	login.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		requestData, _ := io.ReadAll(r.Body)
 		defer r.Body.Close()
-		user := user_validation(requestData)
-		if user == nil {
+		phone := phone_validation(requestData)
+		if phone == nil {
 			jsonData, _ := json.Marshal(map[string]interface{}{
 				"details": "data is not of valid format",
 			})
@@ -47,16 +47,16 @@ func SignUp() *chi.Mux {
 			return
 		}
 		defer db.Close()
-		res := operations.CheckUser(user.Phone, db)
-		if res == -2 {
+		id := operations.CheckUser(phone.PhoneNumber, db)
+		if id == -2 {
 			ServerError(w)
 			return
 		}
-		if res != -1 {
+		if id == -1 {
 			jsonData, _ := json.Marshal(map[string]interface{}{
-				"details": "user already exists",
+				"details": "user didnt exist",
 			})
-			WriteJson(w, jsonData, http.StatusConflict)
+			WriteJson(w, jsonData, 404)
 			return
 		}
 		client := database.RedisConnection()
@@ -66,17 +66,14 @@ func SignUp() *chi.Mux {
 		}
 		defer client.Close()
 		otp := GenerateOTP()
-		key := GenerateKey(user.Phone)
-		if !SendSMS(user.Phone, otp) {
+		key := GenerateKey(phone.PhoneNumber)
+		if !SendSMS(phone.PhoneNumber, otp) {
 			ServerError(w)
 			return
 		}
 		data := map[string]interface{}{
-			"type":  "sign_up",
-			"otp":   otp,
-			"name":  user.Name,
-			"phone": user.Phone,
-			"reg":   user.Reg,
+			"type": "login",
+			"otp":  otp,
 		}
 		err := client.HMSet(context.Background(), key, data).Err()
 		if err != nil {
@@ -89,9 +86,9 @@ func SignUp() *chi.Mux {
 			return
 		}
 		jsonData, _ := json.Marshal(map[string]interface{}{
-			"details": "user is created",
+			"details": "otp is sent ",
 		})
-		WriteJson(w, jsonData, 201)
+		WriteJson(w, jsonData, 200)
 	})
-	return sign_up
+	return login
 }

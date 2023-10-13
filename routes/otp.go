@@ -60,31 +60,41 @@ func Otp() *chi.Mux {
 			WriteJson(w, jsonData, 403)
 			return
 		}
-		if storedOtp["type"] == "sign_up" {
-			if storedOtp["otp"] != otp.Otp {
-				jsonData, _ := json.Marshal(map[string]interface{}{
-					"details": "otp is not valid",
-				})
-				WriteJson(w, jsonData, 403)
-				return
-			}
-			db := database.SQLConnection()
-			if db == nil {
-				ServerError(w)
-				return
-			}
-			defer db.Close()
-			id := operations.RegisterUser(storedOtp["phone"], storedOtp["name"], storedOtp["reg"], db)
-			if id == -1 {
-				ServerError(w)
-				return
-			}
+
+		if storedOtp["otp"] != otp.Otp {
 			jsonData, _ := json.Marshal(map[string]interface{}{
-				"details": "user is created",
+				"details": "otp is not valid",
 			})
-			WriteJson(w, jsonData, 201)
+			WriteJson(w, jsonData, 403)
 			return
 		}
+		db := database.SQLConnection()
+		if db == nil {
+			ServerError(w)
+			return
+		}
+		defer db.Close()
+		var id int
+		if storedOtp["type"] == "sign_up" {
+			id = operations.RegisterUser(storedOtp["phone"], storedOtp["name"], storedOtp["reg"], db)
+		} else if storedOtp["type"] == "login" {
+			id = operations.CheckUser(otp.Phone, db)
+		}
+		if id == -2 {
+			ServerError(w)
+			return
+		}
+		jwt, err := GenerateToken(id)
+		if err != nil {
+			ServerError(w)
+			return
+		}
+		jsonData, _ := json.Marshal(map[string]interface{}{
+			"token": jwt,
+			"type":  "Bearer",
+		})
+		WriteJson(w, jsonData, 201)
+
 	})
 	return otp
 }

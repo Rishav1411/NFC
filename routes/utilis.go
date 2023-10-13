@@ -7,8 +7,10 @@ import (
 	"math/rand"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 )
@@ -66,4 +68,18 @@ func SendSMS(phone string, otp string) bool {
 	params.SetTo(phone)
 	_, err := client.Api.CreateMessage(params)
 	return err == nil
+}
+
+func GenerateToken(id int) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": id,
+		"exp":     time.Now().AddDate(0, 3, 0).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	key := []byte(KEY)
+	jwt, err := token.SignedString(key)
+	if err != nil {
+		return "", err
+	}
+	return jwt, nil
 }

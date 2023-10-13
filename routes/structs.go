@@ -10,3 +10,7 @@ type OTP struct {
 	Phone string `json:"phone" validate:"required,min=13,max=13,phone"`
 	Otp   string `json:"otp" validate:"required,min=4,max=4,otp"`
 }
+
+type Phone struct {
+	PhoneNumber string `json:"phone" validate:"required,min=13,max=13,phone"`
+}
