@@ -55,7 +55,7 @@ func Otp() *chi.Mux {
 		}
 		if len(storedOtp) == 0 {
 			jsonData, _ := json.Marshal(map[string]interface{}{
-				"details": "otp is expires",
+				"details": "otp is expired",
 			})
 			WriteJson(w, jsonData, 403)
 			return
@@ -93,7 +93,11 @@ func Otp() *chi.Mux {
 			"token": jwt,
 			"type":  "Bearer",
 		})
-		WriteJson(w, jsonData, 201)
+		if storedOtp["type"] == "sign_up" {
+			WriteJson(w, jsonData, 201)
+		} else {
+			WriteJson(w, jsonData, 200)
+		}
 
 	})
 	return otp

@@ -86,7 +86,7 @@ func Login() *chi.Mux {
 			return
 		}
 		jsonData, _ := json.Marshal(map[string]interface{}{
-			"details": "otp is sent ",
+			"details": "otp is sent",
 		})
 		WriteJson(w, jsonData, 200)
 	})
