@@ -1,0 +1,268 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "NFC Payment Application APIs",
+      "version": "1.0.0"
+    },
+    "components": {
+      "schemas": {
+        "userResponse": {
+          "type": "object",
+          "properties": {
+            "details": {
+              "type": "string"
+            }
+          }
+        },
+        "jwtTokens": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "token": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "responses": {
+        "response_invalid_user": {
+          "description": "Invalid user data",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userResponse"
+              },
+              "example": {
+                "details": "Data is not in a valid format"
+              }
+            }
+          }
+        },
+        "response_server_error": {
+          "description": "Server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userResponse"
+              },
+              "example": {
+                "details": "Server error"
+              }
+            }
+          }
+        }
+      }
+    },
+    "paths": {
+      "/sign_up/": {
+        "post": {
+          "summary": "Register a new user",
+          "description": "Registers a user in the Redis database",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 50
+                    },
+                    "phone": {
+                      "type": "string",
+                      "pattern": "^\\+\\d{12}$"
+                    },
+                    "reg": {
+                      "type": "string",
+                      "pattern": "^\\d{2}[A-Z]{3}\\d{4}$"
+                    }
+                  },
+                  "example": {
+                    "name": "Sam",
+                    "phone": "+919596342010",
+                    "reg": "21BCE0980"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "User successfully registered in Redis",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/userResponse"
+                  },
+                  "example": {
+                    "details": "User is created"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/response_invalid_user"
+            },
+            "409": {
+              "description": "User already exists",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/userResponse"
+                  },
+                  "example": {
+                    "details": "User already exists"
+                  }
+                }
+              }
+            },
+            "500": {
+              "$ref": "#/components/responses/response_server_error"
+            }
+          }
+        }
+      },
+      "/login/": {
+        "post": {
+          "summary": "Login to the application",
+          "description": "Used by the user to log into the application",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "phone": {
+                      "type": "string",
+                      "pattern": "^\\+\\d{12}$"
+                    }
+                  },
+                  "example": {
+                    "phone": "+919596342010"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "500": {
+              "$ref": "#/components/responses/response_server_error"
+            },
+            "400": {
+              "$ref": "#/components/responses/response_invalid_user"
+            },
+            "200": {
+              "description": "OTP sent successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/userResponse"
+                  },
+                  "example": {
+                    "details": "OTP is sent"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User does not exist",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/userResponse"
+                  },
+                  "example": {
+                    "details": "User doesn't exist"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/otp/": {
+        "post": {
+          "summary": "Verify OTP",
+          "description": "Used to verify OTP for user authentication",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "phone": {
+                      "type": "string",
+                      "pattern": "^\\+\\d{12}$"
+                    },
+                    "otp": {
+                      "type": "string",
+                      "pattern": "^\\d{4}$"
+                    }
+                  },
+                  "example": {
+                    "phone": "+919596342010",
+                    "otp": "1254"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "500": {
+              "$ref": "#/components/responses/response_server_error"
+            },
+            "400": {
+              "$ref": "#/components/responses/response_invalid_user"
+            },
+            "403": {
+              "description": "Invalid or expired OTP",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/userResponse"
+                  },
+                  "example": {
+                    "details": "OTP is expired"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "JWT token successfully generated",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/jwtTokens"
+                  },
+                  "example": {
+                    "type": "Bearer",
+                    "token": "your-jwt-token-here"
+                  }
+                }
+              }
+            },
+            "201": {
+              "description": "JWT token successfully generated",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/jwtTokens"
+                  },
+                  "example": {
+                    "type": "Bearer",
+                    "token": "your-jwt-token-here"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
