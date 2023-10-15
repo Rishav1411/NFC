@@ -6,6 +6,7 @@ import (
 	"hash/fnv"
 	"math/rand"
 	"net/http"
+	"os"
 	"regexp"
 	"time"
 
@@ -56,6 +57,11 @@ func GenerateKey(phone string) string {
 }
 
 func SendSMS(phone string, otp string) bool {
+	var TWILIO_PH_NO string = os.Getenv("TWILIO_PH_NO")
+
+	var TWILIO_SID string = os.Getenv("TWILIO_SID")
+
+	var TWILIO_TOKEN string = os.Getenv("TWILIO_TOKEN")
 	client := twilio.NewRestClientWithParams(
 		twilio.ClientParams{
 			Username: TWILIO_SID,

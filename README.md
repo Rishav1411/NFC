@@ -48,3 +48,13 @@ This document provides an overview of the NFC Payment Application APIs.
   - `500`: Server error.
 
 For detailed information about each API endpoint, their request parameters, and responses, refer to the OpenAPI specification.
+## Running the NFC Payment Application with Docker
+
+To run the NFC Payment Application using Docker, follow these steps:
+
+1. **Install Docker:** If you don't have Docker installed on your system, you can download and install it from the [official Docker website](https://www.docker.com/get-started).
+
+2. **Pull the Docker Image:** Use the following command to pull the NFC Payment Application Docker image from the public repository:
+
+   ```bash
+   docker pull dockerhub-siva0310/nfc:v0.1
