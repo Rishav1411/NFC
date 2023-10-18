@@ -74,9 +74,16 @@ func Otp() *chi.Mux {
 			return
 		}
 		defer db.Close()
-		var id int
+		ctx := context.Background()
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			ServerError(w)
+			return
+		}
+		defer tx.Rollback()
+		var id int64
 		if storedOtp["type"] == "sign_up" {
-			id = operations.RegisterUser(storedOtp["phone"], storedOtp["name"], storedOtp["reg"], db)
+			id = operations.RegisterUser(storedOtp["phone"], storedOtp["name"], storedOtp["reg"], tx)
 		} else if storedOtp["type"] == "login" {
 			id = operations.CheckUser(otp.Phone, db)
 		}
@@ -85,6 +92,11 @@ func Otp() *chi.Mux {
 			return
 		}
 		jwt, err := GenerateToken(id)
+		if err != nil {
+			ServerError(w)
+			return
+		}
+		err = tx.Commit()
 		if err != nil {
 			ServerError(w)
 			return

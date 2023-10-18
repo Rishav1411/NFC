@@ -76,7 +76,7 @@ func SendSMS(phone string, otp string) bool {
 	return err == nil
 }
 
-func GenerateToken(id int) (string, error) {
+func GenerateToken(id int64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": id,
 		"exp":     time.Now().AddDate(0, 3, 0).Unix(),
@@ -88,4 +88,23 @@ func GenerateToken(id int) (string, error) {
 		return "", err
 	}
 	return jwt, nil
+}
+func VerifyJWT(token string) int64 {
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("THERE WAS ERROR IN PARSING")
+		}
+		return []byte(KEY), nil
+	})
+	if err != nil || !parsedToken.Valid {
+		return -1
+	}
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok {
+		return -1
+	}
+	if exp := claims["exp"].(float64); int(exp) < int(time.Now().Local().Unix()) {
+		return -1
+	}
+	return int64(claims["user_id"].(float64))
 }

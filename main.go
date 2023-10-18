@@ -19,9 +19,11 @@ func main() {
 	sign_up := routes.SignUp()
 	otp := routes.Otp()
 	login := routes.Login()
+	wallet := routes.Wallet()
 	r.Mount("/sign_up", sign_up)
 	r.Mount("/otp", otp)
 	r.Mount("/login", login)
+	r.Mount("/wallet", wallet)
 	server := http.Server{
 		Addr:    "0.0.0.0:8080",
 		Handler: r,
