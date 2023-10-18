@@ -14,3 +14,8 @@ type OTP struct {
 type Phone struct {
 	PhoneNumber string `json:"phone" validate:"required,min=13,max=13,phone"`
 }
+type Transaction struct {
+	Sender_id   string `json:"sender_id" validate:"required"`
+	Receiver_id string `json:"receiver_id" validate:"required"`
+	Amount      int    `json:"amount" validate:"required,min=1"`
+}

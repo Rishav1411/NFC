@@ -64,5 +64,6 @@ func Wallet() *chi.Mux {
 		})
 	})
 	wallet.Get("/", createWallet)
+	wallet.Post("/transfer", transfer)
 	return wallet
 }
