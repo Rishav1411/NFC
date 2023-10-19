@@ -31,22 +31,12 @@ func transfer(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	transaction := transaction_validation(transactionData)
 	if transaction == nil {
-		ServerError(w)
-		return
-	}
-	if r.Context().Value(userContextKey) != transaction.Sender_id && r.Context().Value(userContextKey) != transaction.Receiver_id {
 		jsonData, _ := json.Marshal(map[string]interface{}{
-			"details": "not Authorization",
+			"details": "data is not valid format",
 		})
-		WriteJson(w, jsonData, http.StatusUnauthorized)
+		WriteJson(w, jsonData, 400)
 		return
 	}
-	db := database.SQLConnection()
-	if db == nil {
-		ServerError(w)
-		return
-	}
-	defer db.Close()
 	sender_id, err := strconv.ParseInt(transaction.Sender_id, 10, 64)
 	if err != nil {
 		jsonData, _ := json.Marshal(map[string]interface{}{
@@ -63,7 +53,43 @@ func transfer(w http.ResponseWriter, r *http.Request) {
 		WriteJson(w, jsonData, http.StatusBadRequest)
 		return
 	}
+	db := database.SQLConnection()
+	if db == nil {
+		ServerError(w)
+		return
+	}
+	defer db.Close()
+	val := operations.CheckWallet(r.Context().Value(userContextKey).(int64), db)
+	if val == -2 {
+		ServerError(w)
+		return
+	}
+	if val == -1 {
+		jsonData, _ := json.Marshal(map[string]interface{}{
+			"details": "wallet is not associated with user",
+		})
+		WriteJson(w, jsonData, 400)
+		return
+	}
+	if val != receiver_id && val != sender_id {
+		jsonData, _ := json.Marshal(map[string]interface{}{
+			"details": "not Authorization",
+		})
+		WriteJson(w, jsonData, http.StatusUnauthorized)
+		return
+	}
 	balance := operations.CheckBalance(sender_id, db)
+	if balance == -1 {
+		jsonData, _ := json.Marshal(map[string]interface{}{
+			"details": "No wallet associated with this sender id",
+		})
+		WriteJson(w, jsonData, 404)
+		return
+	}
+	if balance == -2 {
+		ServerError(w)
+		return
+	}
 	if balance < int64(transaction.Amount) {
 		jsonData, _ := json.Marshal(map[string]interface{}{
 			"details": "balance is insufficient",
@@ -77,14 +103,21 @@ func transfer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
-	err = operations.UpdateBalance(sender_id, -int64(transaction.Amount), tx)
+	_, err = operations.UpdateBalance(sender_id, -int64(transaction.Amount), tx)
 	if err != nil {
 		ServerError(w)
 		return
 	}
-	err = operations.UpdateBalance(receiver_id, int64(transaction.Amount), tx)
+	rows, err := operations.UpdateBalance(receiver_id, int64(transaction.Amount), tx)
 	if err != nil {
 		ServerError(w)
+		return
+	}
+	if rows == 0 {
+		jsonData, _ := json.Marshal(map[string]interface{}{
+			"details": "No wallet associated with this receiver_id",
+		})
+		WriteJson(w, jsonData, 404)
 		return
 	}
 	tx.Commit()

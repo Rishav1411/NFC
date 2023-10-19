@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS wallet (
     wallet_id INT AUTO_INCREMENT PRIMARY KEY,
-    balance INT DEFAULT 0,
+    balance INT DEFAULT 100,
     user_id INT NOT NULL UNIQUE,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS transactions(
@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS transactions(
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
     amount INT NOT NULL,
-    transaction_date DATE DEFAULT CURRENT_DATE,
-    transaction_time TIME DEFAULT CURRENT_TIME,
-    FOREIGN KEY (sender_id) REFERENCES wallet(id),
-    FOREIGN KEY (receiver_id) REFERENCES wallet(id),
+    transaction_date DATE DEFAULT (CURRENT_DATE),
+    transaction_time TIME DEFAULT (CURRENT_TIME),
+    FOREIGN KEY (sender_id) REFERENCES wallet(wallet_id),
+    FOREIGN KEY (receiver_id) REFERENCES wallet(wallet_id),
     CONSTRAINT transaction_validation CHECK (sender_id != receiver_id)
 );

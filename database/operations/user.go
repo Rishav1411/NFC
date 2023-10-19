@@ -29,3 +29,16 @@ func RegisterUser(phone string, user_name string, reg string, tx *sql.Tx) int64 
 	}
 	return id
 }
+
+func CheckReg(reg string, db *sql.DB) int64 {
+	var id int64
+	query := "SELECT user_id FROM users WHERE reg_number = ?"
+	err := db.QueryRow(query, reg).Scan(&id)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return -1
+		}
+		return -2
+	}
+	return id
+}

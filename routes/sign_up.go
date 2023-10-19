@@ -59,6 +59,18 @@ func SignUp() *chi.Mux {
 			WriteJson(w, jsonData, http.StatusConflict)
 			return
 		}
+		res = operations.CheckReg(user.Reg, db)
+		if res == -2 {
+			ServerError(w)
+			return
+		}
+		if res != -1 {
+			jsonData, _ := json.Marshal(map[string]interface{}{
+				"details": "user already exists with that reg number",
+			})
+			WriteJson(w, jsonData, http.StatusConflict)
+			return
+		}
 		client := database.RedisConnection()
 		if client == nil {
 			ServerError(w)

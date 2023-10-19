@@ -16,7 +16,7 @@ const userContextKey ContextKey = "user_id"
 
 func createWallet(w http.ResponseWriter, r *http.Request) {
 	db := database.SQLConnection()
-	if db != nil {
+	if db == nil {
 		ServerError(w)
 		return
 	}
