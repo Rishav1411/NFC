@@ -51,3 +51,18 @@ func CheckWallet(user_id int64, db *sql.DB) int64 {
 	}
 	return id
 }
+
+func LogTransaction(sender_id int64, receiver_id int64, amount int64, tx *sql.Tx) error {
+	query := "INSERT INTO transactions(sender_id,receiver_id,amount) VALUES(?,?,?)"
+	_, err := tx.Exec(query, sender_id, receiver_id, amount)
+	return err
+}
+
+func GetHistory(wallet_id int64, db *sql.DB) *sql.Rows {
+	query := "SELECT sender_id,receiver_id,amount,transaction_date,transaction_time FROM transactions WHERE sender_id = ? OR receiver_id = ?"
+	rows, err := db.Query(query, wallet_id, wallet_id)
+	if err != nil {
+		return nil
+	}
+	return rows
+}

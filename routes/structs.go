@@ -19,3 +19,11 @@ type Transaction struct {
 	Receiver_id string `json:"receiver_id" validate:"required"`
 	Amount      int    `json:"amount" validate:"required,min=1"`
 }
+
+type HistoryRow struct {
+	Sender_id   int
+	Receiver_id int
+	Amount      int
+	Date        string
+	Time        string
+}

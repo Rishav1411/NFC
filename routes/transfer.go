@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"nfc/m/database"
@@ -113,11 +114,17 @@ func transfer(w http.ResponseWriter, r *http.Request) {
 		ServerError(w)
 		return
 	}
+	fmt.Println(rows)
 	if rows == 0 {
 		jsonData, _ := json.Marshal(map[string]interface{}{
 			"details": "No wallet associated with this receiver_id",
 		})
 		WriteJson(w, jsonData, 404)
+		return
+	}
+	err = operations.LogTransaction(sender_id, receiver_id, int64(transaction.Amount), tx)
+	if err != nil {
+		ServerError(w)
 		return
 	}
 	tx.Commit()
