@@ -48,4 +48,4 @@ To run the NFC Payment Application using Docker, follow these steps:
 2. **Pull the Docker Image:** Use the following command to pull the NFC Payment Application Docker image from the public repository:
 
    ```bash
-   docker pull dockerhub-siva0310/nfc:v0.1
+   docker pull dockerhub-siva0310/nfc:v0.2
