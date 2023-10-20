@@ -1,87 +1,115 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "NFC Payment Application APIs",
-      "version": "1.0.0"
-    },
-    "components": {
-      "schemas": {
-        "userResponse": {
-          "type": "object",
-          "properties": {
-            "details": {
-              "type": "string"
-            }
+  "openapi": "3.0.0",
+  "info": {
+    "title": "NFC Payment Application APIs",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {
+      "userResponse": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "type": "string"
           }
-        },
-        "jwtTokens": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string"
+        }
+      },
+      "jwtTokens": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "response_invalid_format": {
+        "description": "Invalid user data",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/userResponse"
             },
-            "token": {
-              "type": "string"
+            "examples": {
+              "example1": {
+                "value": {
+                  "details": "Data is not in a valid format"
+                }
+              }
             }
           }
         }
       },
-      "responses": {
-        "response_invalid_user": {
-          "description": "Invalid user data",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/userResponse"
-              },
-              "example": {
-                "details": "Data is not in a valid format"
+      "response_server_error": {
+        "description": "Server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/userResponse"
+            },
+            "examples": {
+              "example1": {
+                "value": {
+                  "details": "Server error"
+                }
               }
             }
           }
-        },
-        "response_server_error": {
-          "description": "Server error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/userResponse"
-              },
-              "example": {
-                "details": "Server error"
+        }
+      },
+      "response_unauthorized": {
+        "description": "User is not authorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/userResponse"
+            },
+            "examples": {
+              "example1": {
+                "value": {
+                  "details": "Not authorized"
+                }
               }
             }
           }
         }
       }
-    },
-    "paths": {
-      "/sign_up/": {
-        "post": {
-          "summary": "Register a new user",
-          "description": "Registers a user in the Redis database",
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "minLength": 3,
-                      "maxLength": 50
-                    },
-                    "phone": {
-                      "type": "string",
-                      "pattern": "^\\+\\d{12}$"
-                    },
-                    "reg": {
-                      "type": "string",
-                      "pattern": "^\\d{2}[A-Z]{3}\\d{4}$"
-                    }
+    }
+  },
+  "paths": {
+    "/sign_up": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "Registers a user in the Redis database",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 50
                   },
-                  "example": {
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^\\+\\d{12}$"
+                  },
+                  "reg": {
+                    "type": "string",
+                    "pattern": "^\\d{2}[A-Z]{3}\\d{4}$"
+                  }
+                }
+              },
+              "examples": {
+                "example1": {
+                  "value": {
                     "name": "Sam",
                     "phone": "+919596342010",
                     "reg": "21BCE0980"
@@ -89,135 +117,161 @@
                 }
               }
             }
-          },
-          "responses": {
-            "201": {
-              "description": "User successfully registered in Redis",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/userResponse"
-                  },
-                  "example": {
-                    "details": "User is created"
-                  }
-                }
-              }
-            },
-            "400": {
-              "$ref": "#/components/responses/response_invalid_user"
-            },
-            "409": {
-              "description": "User already exists",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/userResponse"
-                  },
-                  "example": {
-                    "details": "User already exists"
-                  }
-                }
-              }
-            },
-            "500": {
-              "$ref": "#/components/responses/response_server_error"
-            }
           }
-        }
-      },
-      "/login/": {
-        "post": {
-          "summary": "Login to the application",
-          "description": "Used by the user to log into the application",
-          "requestBody": {
-            "required": true,
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered in Redis",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "phone": {
-                      "type": "string",
-                      "pattern": "^\\+\\d{12}$"
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "User is created"
                     }
-                  },
-                  "example": {
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/response_invalid_format"
+          },
+          "409": {
+            "description": "User already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "User already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/response_server_error"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login to the application",
+        "description": "Used by the user to log into the application",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^\\+\\d{12}$"
+                  }
+                }
+              },
+              "examples": {
+                "example1": {
+                  "value": {
                     "phone": "+919596342010"
                   }
                 }
               }
             }
+          }
+        },
+        "responses": {
+          "500": {
+            "$ref": "#/components/responses/response_server_error"
           },
-          "responses": {
-            "500": {
-              "$ref": "#/components/responses/response_server_error"
-            },
-            "400": {
-              "$ref": "#/components/responses/response_invalid_user"
-            },
-            "200": {
-              "description": "OTP sent successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/userResponse"
-                  },
-                  "example": {
-                    "details": "OTP is sent"
+          "400": {
+            "$ref": "#/components/responses/response_invalid_format"
+          },
+          "200": {
+            "description": "OTP sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "OTP is sent"
+                    }
                   }
                 }
               }
-            },
-            "404": {
-              "description": "User does not exist",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/userResponse"
-                  },
-                  "example": {
-                    "details": "User doesn't exist"
+            }
+          },
+          "404": {
+            "description": "User does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "User doesn't exist"
+                    }
                   }
                 }
               }
             }
           }
         }
-      },
-      "/otp/": {
-        "post": {
-          "summary": "Verify OTP",
-          "description": "Used to verify OTP for user authentication",
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "phone": {
-                      "type": "string",
-                      "pattern": "^\\+\\d{12}$"
-                    },
-                    "otp": {
-                      "type": "string",
-                      "pattern": "^\\d{4}$"
-                    }
+      }
+    },
+    "/otp": {
+      "post": {
+        "summary": "Verify OTP",
+        "description": "Used to verify OTP for user authentication",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "pattern": "^\\+\\d{12}$"
                   },
-                  "example": {
-                    "phone": "+919596342010",
-                    "otp": "1254"
+                  "otp": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
                   }
-                }
+                },
+                "examples": [
+                  {
+                    "value": {
+                      "phone": "+919596342010",
+                      "otp": "1254"
+                    }
+                  }
+                ]
               }
             }
-          },
+          }
+        },
           "responses": {
             "500": {
               "$ref": "#/components/responses/response_server_error"
             },
             "400": {
-              "$ref": "#/components/responses/response_invalid_user"
+              "$ref": "#/components/responses/response_invalid_format"
             },
             "403": {
               "description": "Invalid or expired OTP",
@@ -226,9 +280,10 @@
                   "schema": {
                     "$ref": "#/components/schemas/userResponse"
                   },
-                  "example": {
-                    "details": "OTP is expired"
-                  }
+                  "example": 
+                    {
+                        "details": "OTP is expired"
+                    }
                 }
               }
             },
@@ -239,24 +294,277 @@
                   "schema": {
                     "$ref": "#/components/schemas/jwtTokens"
                   },
-                  "example": {
-                    "type": "Bearer",
-                    "token": "your-jwt-token-here"
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "type": "Bearer",
+                        "token": "your-jwt-token-here"
+                      }
+                    }
                   }
                 }
               }
-            },
-            "201": {
-              "description": "JWT token successfully generated",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/jwtTokens"
-                  },
-                  "example": {
-                    "type": "Bearer",
-                    "token": "your-jwt-token-here"
+            }
+          }
+        
+      }
+    },
+    "/wallet": {
+      "get": {
+        "summary": "Create wallet",
+        "description": "Used to create a wallet",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Token for authorization",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "$ref": "#/components/responses/response_server_error"
+          },
+          "401": {
+            "$ref": "#/components/responses/response_unauthorized"
+          },
+          "201": {
+            "description": "It is successfully created a wallet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "1"
+                    }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/transfer": {
+      "post": {
+        "summary": "Transfer amount",
+        "description": "It will transfer an amount to another person",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Token for authorization",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sender_id": {
+                    "type": "string"
+                  },
+                  "receiver_id": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "min": 1
+                  }
+                },
+                "examples": [
+                  {
+                    "value": {
+                      "sender_id": "1",
+                      "receiver_id": "2",
+                      "amount": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "$ref": "#/components/responses/response_server_error"
+          },
+          "401": {
+            "$ref": "#/components/responses/response_unauthorized"
+          },
+          "400": {
+            "description": "Invalid user data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "Data is not in a valid format"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Transaction completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "Completed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User or wallet doesn't exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "No wallet associated with this receiver_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "Balance is insufficient"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/history": {
+      "get": {
+        "summary": "Transaction history",
+        "description": "Get the transaction history",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "description": "Token for authorization",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "$ref": "#/components/responses/response_server_error"
+          },
+          "401": {
+            "$ref": "#/components/responses/response_unauthorized"
+          },
+          "400": {
+            "description": "If no wallet is associated with the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userResponse"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "details": "Wallet is not associated with the user"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Returns history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "Sender_id": {
+                            "type": "integer"
+                          },
+                          "Receiver_id": {
+                            "type": "integer"
+                          },
+                          "Amount": {
+                            "type": "integer"
+                          },
+                          "Date": {
+                            "type": "string"
+                          },
+                          "Time": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "examples": [
+                    {
+                      "value": {
+                        "details": null
+                      }
+                    },
+                    {
+                      "value": {
+                        "details": [
+                          {
+                            "Sender_id": 1,
+                            "Receiver_id": 3,
+                            "Amount": 50,
+                            "Date": "2023-10-19",
+                            "Time": "08:18:07"
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -265,4 +573,4 @@
       }
     }
   }
-  
+}
